@@ -109,6 +109,10 @@ class Command extends EventEmitter {
   constructor(name) {
     super();
     this.commands = [];
+    this._loggers = {
+      stdout: (...params) => { process.stdout.write(...params) },
+      error: console.error
+    }
     this.options = [];
     this.parent = null;
     this._allowUnknownOption = false;
@@ -1195,7 +1199,7 @@ Read more on https://git.io/JJc0W`);
 
   missingArgument(name) {
     const message = `error: missing required argument '${name}'`;
-    console.error(message);
+    this._loggers.error(message);
     this._exit(1, 'commander.missingArgument', message);
   };
 
@@ -1214,7 +1218,7 @@ Read more on https://git.io/JJc0W`);
     } else {
       message = `error: option '${option.flags}' argument missing`;
     }
-    console.error(message);
+    this._loggers.error(message);
     this._exit(1, 'commander.optionMissingArgument', message);
   };
 
@@ -1227,7 +1231,7 @@ Read more on https://git.io/JJc0W`);
 
   missingMandatoryOptionValue(option) {
     const message = `error: required option '${option.flags}' not specified`;
-    console.error(message);
+    this._loggers.error(message);
     this._exit(1, 'commander.missingMandatoryOptionValue', message);
   };
 
@@ -1241,7 +1245,7 @@ Read more on https://git.io/JJc0W`);
   unknownOption(flag) {
     if (this._allowUnknownOption) return;
     const message = `error: unknown option '${flag}'`;
-    console.error(message);
+    this._loggers.error(message);
     this._exit(1, 'commander.unknownOption', message);
   };
 
@@ -1259,7 +1263,7 @@ Read more on https://git.io/JJc0W`);
     const fullCommand = partCommands.join(' ');
     const message = `error: unknown command '${this.args[0]}'.` +
       (this._hasHelpOption ? ` See '${fullCommand} ${this._helpLongFlag}'.` : '');
-    console.error(message);
+    this._loggers.error(message);
     this._exit(1, 'commander.unknownCommand', message);
   };
 
@@ -1287,7 +1291,7 @@ Read more on https://git.io/JJc0W`);
     this._versionOptionName = versionOption.attributeName();
     this.options.push(versionOption);
     this.on('option:' + versionOption.name(), () => {
-      process.stdout.write(str + '\n');
+      this._loggers.stdout(str + '\n');
       this._exit(0, 'commander.version', str);
     });
     return this;
@@ -1635,7 +1639,7 @@ Read more on https://git.io/JJc0W`);
     if (typeof cbOutput !== 'string' && !Buffer.isBuffer(cbOutput)) {
       throw new Error('outputHelp callback must return a string or a Buffer');
     }
-    process.stdout.write(cbOutput);
+    this._loggers.stdout(cbOutput);
     this.emit(this._helpLongFlag);
   };
 
