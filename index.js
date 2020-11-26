@@ -85,9 +85,10 @@ class CommanderError extends Error {
    * @param {number} exitCode suggested exit code which could be used with process.exit
    * @param {string} code an id string representing the error
    * @param {string} message human-readable description of the error
+   * @param {string} helpMessage Help message of the command/subcommand executed
    * @constructor
    */
-  constructor(exitCode, code, message) {
+  constructor(exitCode, code, message, helpMessage) {
     super(message);
     // properly capture stack trace in Node.js
     Error.captureStackTrace(this, this.constructor);
@@ -95,6 +96,7 @@ class CommanderError extends Error {
     this.code = code;
     this.exitCode = exitCode;
     this.nestedError = undefined;
+    this.helpMessage = helpMessage
   }
 }
 
@@ -389,7 +391,7 @@ class Command extends EventEmitter {
 
   _exit(exitCode, code, message) {
     if (this._exitCallback) {
-      this._exitCallback(new CommanderError(exitCode, code, message));
+      this._exitCallback(new CommanderError(exitCode, code, message, this.helpInformation()));
       // Expecting this line is not reached.
     }
     process.exit(exitCode);
@@ -917,7 +919,7 @@ Read more on https://git.io/JJc0W`);
       proc.on('close', process.exit.bind(process));
     } else {
       proc.on('close', () => {
-        exitCallback(new CommanderError(process.exitCode || 0, 'commander.executeSubCommandAsync', '(close)'));
+        exitCallback(new CommanderError(process.exitCode || 0, 'commander.executeSubCommandAsync', '(close)', this.helpInformation()));
       });
     }
     proc.on('error', (err) => {
@@ -934,7 +936,7 @@ Read more on https://git.io/JJc0W`);
       if (!exitCallback) {
         process.exit(1);
       } else {
-        const wrappedError = new CommanderError(1, 'commander.executeSubCommandAsync', '(error)');
+        const wrappedError = new CommanderError(1, 'commander.executeSubCommandAsync', '(error)', this.helpInformation());
         wrappedError.nestedError = err;
         exitCallback(wrappedError);
       }

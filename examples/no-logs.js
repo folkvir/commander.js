@@ -9,7 +9,6 @@
 // subcommands: add = 8
 // end
 
-console.log(process.argv)
 // const { Command } = require('commander'); // (normal include)
 const { Command } = require('../'); // include commander in git clone of commander repo
 const program = new Command();
@@ -77,7 +76,6 @@ program._loggers.error = (_) => undefined
 try {
   
   const args = "add '\"'\"\'{'\"##thismysthicalthingsworks\###\"\#' ' -n 7".match(/("([^"]*)")|('([^']*)')|(\S+)/g)
-  console.log(args)
   program.parse(["", "", ...args])
 } catch (error) {
   // console.log(error)
